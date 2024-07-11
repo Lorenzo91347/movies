@@ -6,15 +6,21 @@ abstract class Event implements Pricing
     private $eventType;
     private $duration;
     private $hrPrice;
+    private $timeFrame;
+    private $discount;
 
-    public function __construct($eventType, $duration)
+    public function __construct($eventType, $duration, $timeFrame)
     {
         $this->eventType = $eventType;
         $this->duration = $duration;
+        $this->timeFrame = $timeFrame;
         $this->setHrPrice();
+        $this->setDiscount();
     }
 
     abstract public function getType(): string;
+
+
 
     private function setHrPrice(): void
     {
@@ -31,15 +37,40 @@ abstract class Event implements Pricing
         }
     }
 
-    public function pricing(): float
+    private function setDiscount()
+
     {
-        return $this->hrPrice * $this->duration;
+        switch ($this->timeFrame) {
+            case 'morning':
+                $this->discount = 0.30;
+                break;
+            case 'afternoon':
+                $this->discount = 0.10;
+                break;
+            case 'evening':
+                $this->discount = 0;
+                break;
+        }
+
+        return $this->discount;
     }
 
-    protected function getEventType(): string
+
+
+    public function pricing(): float
+    {
+        $finalPrice =  $this->hrPrice * $this->duration;
+        if ($this->discount > 0) {
+            $discountAmount = $finalPrice * ($this->discount / 100);
+            $finalPrice -= $discountAmount;
+        }
+        return number_format((float)$finalPrice, 2, '.', '');
+    }
+
+    /* protected function getEventType(): string
     {
         return $this->eventType;
-    }
+    } */
 
     protected function getDuration(): float
     {
